@@ -1,9 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
 export default function Login() {
-  const { login, loginWithGoogle } = useAuth()
+  const { login, loginWithGoogle, currentUser } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const [email, setEmail] = useState('')
@@ -13,6 +13,10 @@ export default function Login() {
   const [googleLoading, setGoogleLoading] = useState(false)
 
   const from = location.state?.from?.pathname || '/'
+
+  useEffect(() => {
+    if (currentUser) navigate(from, { replace: true })
+  }, [currentUser]) // eslint-disable-line react-hooks/exhaustive-deps
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -32,8 +36,8 @@ export default function Login() {
     setError('')
     setGoogleLoading(true)
     try {
-      await loginWithGoogle()
-      navigate(from, { replace: true })
+      const user = await loginWithGoogle()
+      if (user) navigate(from, { replace: true })
     } catch (err) {
       setError('Could not sign in with Google. Please try again.')
     } finally {
