@@ -12,10 +12,12 @@ import ContactUs from './pages/ContactUs'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import AdminLayout from './pages/AdminLayout'
+import AdminHome from './pages/AdminHome'
 import AdminLaunches from './pages/AdminLaunches'
 import AdminLaunchForm from './pages/AdminLaunchForm'
 import AdminDevelopers from './pages/AdminDevelopers'
 import AdminSubmissions from './pages/AdminSubmissions'
+import AdminSpecialOffer from './pages/AdminSpecialOffer'
 import AdminUsers from './pages/AdminUsers'
 import NotFound from './pages/NotFound'
 
@@ -50,11 +52,55 @@ export default function App() {
               </ProtectedRoute>
             }
           >
-            <Route index element={<AdminLaunches />} />
-            <Route path="launches/new" element={<AdminLaunchForm />} />
-            <Route path="launches/:id/edit" element={<AdminLaunchForm />} />
-            <Route path="developers" element={<AdminDevelopers />} />
-            <Route path="submissions" element={<AdminSubmissions />} />
+            <Route index element={<AdminHome />} />
+            <Route
+              path="launches"
+              element={
+                <ProtectedRoute requirePermission="launches">
+                  <AdminLaunches />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="launches/new"
+              element={
+                <ProtectedRoute requirePermission="launches">
+                  <AdminLaunchForm />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="launches/:id/edit"
+              element={
+                <ProtectedRoute requirePermission="launches">
+                  <AdminLaunchForm />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="developers"
+              element={
+                <ProtectedRoute requirePermission="developers">
+                  <AdminDevelopers />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="submissions"
+              element={
+                <ProtectedRoute requirePermission="submissions">
+                  <AdminSubmissions />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="special-offer"
+              element={
+                <ProtectedRoute requirePermission="offers">
+                  <AdminSpecialOffer />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="users"
               element={

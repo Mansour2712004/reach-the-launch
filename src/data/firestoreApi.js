@@ -8,6 +8,7 @@ import {
   orderBy,
   query,
   serverTimestamp,
+  setDoc,
   updateDoc,
   where,
 } from 'firebase/firestore'
@@ -90,7 +91,15 @@ export async function getAllContactSubmissions() {
   return snap.docs.map((d) => ({ id: d.id, ...d.data() }))
 }
 
-/* ---------------- Users (for superadmin promotion) ---------------- */
+export async function updateContactSubmission(id, data) {
+  return updateDoc(doc(db, 'contactSubmissions', id), data)
+}
+
+export async function deleteContactSubmission(id) {
+  return deleteDoc(doc(db, 'contactSubmissions', id))
+}
+
+/* ---------------- Users (for superadmin promotion + permissions) ---------------- */
 
 export async function getAllUsers() {
   const snap = await getDocs(collection(db, 'users'))
@@ -98,5 +107,33 @@ export async function getAllUsers() {
 }
 
 export async function setUserRole(uid, role) {
-  return updateDoc(doc(db, 'users', uid), { role })
+  // Sub-admins start with every permission switched off — the superadmin
+  // grants each one explicitly from Manage Admins.
+  const data = { role }
+  if (role === 'admin') {
+    data.permissions = { launches: false, developers: false, submissions: false, offers: false }
+  }
+  return updateDoc(doc(db, 'users', uid), data)
+}
+
+export async function setUserPermissions(uid, permissions) {
+  return updateDoc(doc(db, 'users', uid), { permissions })
+}
+
+/* ---------------- Special Offer (single homepage banner) ---------------- */
+
+// Stored as a single fixed document so the homepage only ever needs one read.
+const SPECIAL_OFFER_REF = () => doc(db, 'settings', 'specialOffer')
+
+export async function getSpecialOffer() {
+  const snap = await getDoc(SPECIAL_OFFER_REF())
+  return snap.exists() ? snap.data() : null
+}
+
+export async function setSpecialOffer(data) {
+  return setDoc(SPECIAL_OFFER_REF(), { ...data, updatedAt: serverTimestamp() })
+}
+
+export async function deleteSpecialOffer() {
+  return deleteDoc(SPECIAL_OFFER_REF())
 }

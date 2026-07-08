@@ -7,8 +7,12 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function userDoc() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
     function userRole() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+      return userDoc().role;
     }
 
     function isAdmin() {
@@ -19,31 +23,48 @@ service cloud.firestore {
       return isSignedIn() && userRole() == 'superadmin';
     }
 
+    // Superadmin always passes. A regular admin only passes if the
+    // superadmin has explicitly switched this permission on for them.
+    function hasPermission(perm) {
+      return isSuperAdmin() ||
+        (isSignedIn() && userRole() == 'admin' && userDoc().permissions[perm] == true);
+    }
+
     // Anyone (including guests) can browse launches & developers.
     match /launches/{launchId} {
       allow read: if true;
-      allow create, update, delete: if isAdmin();
+      allow create, update, delete: if hasPermission('launches');
     }
 
     match /developers/{devId} {
       allow read: if true;
-      allow create, update, delete: if isAdmin();
+      allow create, update, delete: if hasPermission('developers');
     }
 
-    // Users can read/create their own profile; only superadmin can change roles.
+    // Homepage special offer banner — public read, gated write.
+    match /settings/specialOffer {
+      allow read: if true;
+      allow write: if hasPermission('offers');
+    }
+
+    // Users can read/create their own profile; only superadmin can change
+    // roles or permissions. Browsing the full user list is superadmin-only.
     match /users/{uid} {
-      allow read: if isSignedIn() && (request.auth.uid == uid || isAdmin());
+      allow get: if isSignedIn() && (request.auth.uid == uid || isSuperAdmin());
+      allow list: if isSuperAdmin();
       allow create: if isSignedIn() && request.auth.uid == uid;
-      allow update: if isSignedIn() && request.auth.uid == uid && request.resource.data.role == resource.data.role
+      allow update: if (isSignedIn() && request.auth.uid == uid &&
+                          request.resource.data.role == resource.data.role &&
+                          request.resource.data.permissions == resource.data.permissions)
                     || isSuperAdmin();
       allow delete: if isSuperAdmin();
     }
 
-    // Any signed-in user can submit a contact request, but only admins can read them.
+    // Any signed-in user can submit a contact request, but only admins with
+    // the 'submissions' permission can read, mark done, or delete them.
     match /contactSubmissions/{subId} {
       allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      allow read: if isAdmin();
-      allow update, delete: if isAdmin();
+      allow read, update, delete: if hasPermission('submissions');
     }
   }
 }

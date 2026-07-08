@@ -1,65 +1,130 @@
-Reach The Launch — Client Guide
-Welcome to your new website, Reach The Launch — the real estate platform dedicated to showcasing the best current property launches in the Egyptian market (East Cairo, West Cairo, North Coast, and Ain Sokhna).
-This guide walks you through using your dashboard and running the site day-to-day, with no technical background needed.
+# Reach The Launch
 
-1. User Levels on the Site
-   UserCan doGuest (visitor)Browse projects and developers onlyClient (a buyer — creates an account to inquire about a launch)Browse + submit their details through "Contact Us" to express interest in a project. Cannot edit anything on the site — this is purely the person shopping for a propertyAdminAdd/edit/delete launches + view all client Contact Us submissionsYou (Owner)Everything above + promote any client account to "Admin" to help you manage the site
+منصة عقارية مخصصة بالكامل لـ **الـ Launches** فقط — مش زي Nawy اللي بتعرض كل المشاريع القديمة والجديدة مع بعض. هنا كل مشروع معروض هو Launch حالي، ومعاه بالظبط "أحسن وقت للشراء" (Best Time to Buy) واضح في صفحته.
 
-Note: "Client" here always means someone shopping for a property to buy — never someone who manages or edits the website. Only "Admin" and "You (Owner)" can change anything on the site.
+React (Vite) + Tailwind + Firebase (Auth + Firestore) — مجاني بالكامل، ومترفوع على Vercel.
 
-2. How to Access Your Dashboard
+---
 
-Open the website and sign in with your account (the one you own the site with)
-You'll see "Admin Panel" at the top of the site — click it
-From here you can do everything listed below
+## 1) الأدوار (Roles)
 
-3. How to Add a New Developer Company
-   Before adding any project, the developer company behind it needs to be added first.
+| الدور | الصلاحيات |
+|---|---|
+| **Guest** (زائر) | يتصفح كل الـ Launches والـ Developers، وييجي يدوس "Contact Us" بيتطلب منه تسجيل الدخول |
+| **User** (عميل مسجل) | كل حاجة الـ Guest + يقدر يبعت "Contact Us" (عام أو لمشروع معين) ببياناته |
+| **Admin** (سب-أدمن) | يضيف/يعدل/يحذف أي Launch + يشوف كل رسايل الـ Contact Us |
+| **Super Admin** (الأدمن الأساسي/الأول) | كل حاجة الـ Admin + يقدر يخلي أي User يبقى Admin (أو يرجعه User تاني) |
 
-From the dashboard, click the "Developers" tab
-On the left you'll see a form: enter the company name, a logo image link (if available), and a short description (optional)
-Click "Add Developer"
-The company appears immediately in the list on the right, and you can edit or delete it anytime from the same page
+الـ Super Admin مش بيتعمل من الموقع نفسه لأسباب أمان — بيتحدد يدويًا من Firebase Console (خطوات تحت).
 
-4. How to Add a New Launch (Project)
+---
 
-From the dashboard, click the "Add Launch" tab
-Fill in the details:
+## 2) خطوات ربط Firebase (مجاني بالكامل - Spark Plan)
 
-Project name
-Select the developer company (from the ones you've already added)
-Select the region (East / West / North Coast / Sokhna)
-Cover image link, plus optional gallery image links (separated by commas)
-Starting price
-Launch window (e.g. August 2026)
-"Best Time to Buy" — the highlighted text shown on the project page (e.g. "Register in Phase 1 before official pricing is released")
-Available unit types (apartment, duplex, villa, etc.)
-A detailed project description
+1. اعمل مشروع جديد على [Firebase Console](https://console.firebase.google.com)
+2. من Build > Authentication > Sign-in method: فعّل **Email/Password** و **Google**
+   - لما تفعّل Google هيطلب "Project support email" — اختار إيميلك واحفظ
+   - **مهم قبل الرفع على Vercel**: من Authentication > Settings > Authorized domains، ضيف دومين الموقع بتاعك على Vercel (مثلاً `reach-the-launch.vercel.app`) — من غيرها زرار "Continue with Google" هيدي Error
+3. من Build > Firestore Database: اعمل قاعدة بيانات جديدة (Start in production mode)
+4. من Project Settings > General > Your apps: اعمل Web App جديدة، وهتاخد منها الـ config
+5. حط القيم دي في ملف `.env.local` (اعمل نسخة من `.env.example`):
+   ```
+   VITE_FIREBASE_API_KEY=...
+   VITE_FIREBASE_AUTH_DOMAIN=...
+   VITE_FIREBASE_PROJECT_ID=...
+   VITE_FIREBASE_STORAGE_BUCKET=...
+   VITE_FIREBASE_MESSAGING_SENDER_ID=...
+   VITE_FIREBASE_APP_ID=...
+   ```
+6. من Firestore > Rules: انسخ محتوى ملف `firestore.rules` الموجود في المشروع وحطه بدل الـ rules الافتراضية، وانشرها (Publish).
 
-Click "Create Launch"
-The project appears immediately on the homepage and carousel — no extra steps needed
+### تحديد أول Super Admin
+1. سجّل حساب عادي من صفحة "Create Account" في الموقع.
+2. روح على Firestore Console > collection `users` > هتلاقي مستند بالـ UID بتاعك.
+3. غيّر فيلد `role` من `"user"` لـ `"superadmin"` يدويًا.
+4. رجّع تسجل دخول (أو ريفريش) — هتلاقي "Admin Panel" ظهر في الـ Navbar ومعاه تاب "Manage Admins".
 
-To edit or delete an existing project: go to the "Launches" tab in the dashboard, where you'll find "Edit" and "Delete" buttons next to each project.
+من هنا، الـ Super Admin ده هو بس اللي يقدر يخلي أي حد تاني Admin من صفحة "Manage Admins".
 
-5. How to View Client "Contact Us" Submissions
-   These are the buyers who reached out because they're interested in purchasing.
+---
 
-From the dashboard, click the "Contact Submissions" tab
-You'll see a table with everyone who submitted their details: name, phone number, unit type they're interested in, preferred date (if provided), and which project they're asking about (or "General Inquiry" if it wasn't tied to a specific project)
+> **لو شغلت الموقع قبل ما تحط بيانات Firebase**: مش هتشوف صفحة بيضة فاضية تاني — هتلاقي شاشة "Setup Required" واضحة بتقولك بالظبط إيه الناقص. لسة ماحصلش أي حاجة غلط، ده متوقع لحد ما تخلص خطوة (5) و(6) تحت.
 
-6. How to Give Someone Else "Admin" Access
-   This is for someone helping you manage the site — not a buyer. If you have a team member who needs to add projects and view client submissions:
+## 3) تشغيل المشروع محليًا
 
-Ask them to first create a regular Client account on the site (Create Account) — the same signup a buyer would use
-From your dashboard, click the "Manage Admins" tab (this tab is only visible to you, the site owner)
-You'll see a list of all registered accounts
-Next to their name, click "Make Admin"
-Done — they can now access the dashboard to add/edit projects and view Contact Submissions (but they can't promote anyone else to Admin — that stays with you only)
-You can revert them to a regular Client account anytime the same way (the button turns into "Revoke Admin")
+```bash
+npm install
+npm run dev
+```
 
-7. General Tips
+> **لو ظهرلك error زي `'vite' is not recognized`**: ده معناه إن `npm install` إما ماتنفذش أو اتنفذ في مجلد غلط.
+> تأكد إنك واقف بالظبط جوه المجلد اللي فيه `package.json` (اعمل `dir` وشوف إنه ظاهر)، وإن مجلد `node_modules` اتعمل فعلاً بعد الـ install. لو المشروع كان متفكوك (unzip) جوه مجلد جوه مجلد بنفس الاسم بالغلط، ادخل للمجلد الصح اللي فيه `package.json` مباشرة وجرب تاني.
 
-Use high-quality, clear cover images for every project — it's the first thing a buyer sees
-Make "Best Time to Buy" specific and urgent (dates, discounts, booking phases) — that's the core idea of the site
-Check the "Contact Submissions" tab daily so you don't miss an interested buyer
-Once a project's launch window has passed, you can edit or remove it anytime from the "Launches" tab
+## 4) هل الـ Firebase config (API Key) لازم يتخبى؟
+
+لأ — ومفيش طريقة تخبيه أصلًا لو الموقع شغال على متصفح المستخدم (React/Vite زي أي Frontend تاني)، لأن المتصفح لازم يكون عنده القيم دي عشان يقدر يكلم Firebase. ده طبيعي وكل المواقع اللي شغالة بـ Firebase كده، بما فيهم مواقع كبيرة.
+
+**اللي فعليًا بيحميك مش إخفاء الـ API Key، ده الحاجتين دول:**
+
+1. **Firestore Security Rules** (ملف `firestore.rules` اللي نشرته بالفعل): دي اللي بتحدد مين يقدر يقرا/يكتب/يعدل/يحذف كل collection — مش الـ API Key. حتى لو حد شاف الـ Key، مش هيقدر يعمل حاجة غير اللي الـ Rules سامحة بيه (زي إنه يقرا الـ launches بس، ومايقدرش يقرا contactSubmissions غير لو Admin).
+2. **Authorized domains** (في Authentication > Settings): بتحدد مين الدومينز اللي تقدر تستخدم تسجيل الدخول بتاعك.
+
+يعني خلاصة الأمر: ارفع المشروع عادي على GitHub وحط فيه الـ config زي ما هو، بس **تأكد إن الـ Rules منشورة صح** (زي ما عملنا) — ده اللي بيحمي بياناتك فعليًا مش إخفاء الملف.
+
+---
+
+## 5) الرفع على GitHub
+
+1. لو معندكش حساب، اعمل واحد على [github.com](https://github.com)
+2. من الموقع، دوس "+" فوق يمين → "New repository"
+3. سمّيه `reach-the-launch` → سيبه Public أو Private براحتك → "Create repository"
+4. افتح Terminal جوه VS Code (Terminal > New Terminal) وأنت واقف في مجلد المشروع، واكتب:
+   ```bash
+   git init
+   git add .
+   git commit -m "Initial commit"
+   git branch -M main
+   git remote add origin https://github.com/USERNAME/reach-the-launch.git
+   git push -u origin main
+   ```
+   (غيّر `USERNAME` باسم حسابك على GitHub، وهيطلب منك تسجل دخول أول مرة)
+5. ملف `.gitignore` الموجود بالفعل هيمنع رفع `.env.local` و `node_modules` تلقائيًا — متقلقش، الـ Firebase keys مش هترفع على GitHub أصلًا حتى لو حبيت (وده كويس كممارسة حتى لو مش سر حرج)
+
+## 6) الرفع على Vercel (مجانًا بالكامل)
+
+1. روح [vercel.com](https://vercel.com) وسجل دخول بحساب GitHub بتاعك (زرار "Continue with GitHub")
+2. دوس "Add New..." → "Project"
+3. هيظهرلك الريبو `reach-the-launch` — دوس "Import"
+4. قبل ما تدوس Deploy، افتح قسم "**Environment Variables**" وضيف الـ 6 متغيرات (نفس اللي في `.env.local` بتاعك):
+   ```
+   VITE_FIREBASE_API_KEY
+   VITE_FIREBASE_AUTH_DOMAIN
+   VITE_FIREBASE_PROJECT_ID
+   VITE_FIREBASE_STORAGE_BUCKET
+   VITE_FIREBASE_MESSAGING_SENDER_ID
+   VITE_FIREBASE_APP_ID
+   ```
+5. دوس "**Deploy**" — استنى دقيقة أو اتنين
+6. هيديك رابط زي `reach-the-launch.vercel.app` — الموقع شغال لايف عليه
+
+**آخر خطوة مهمة جدًا:** ارجع Firebase Console > Authentication > Settings > Authorized domains، وضيف نفس الدومين اللي Vercel ديته ليك (`reach-the-launch.vercel.app`) — من غيرها تسجيل الدخول (خصوصًا Google) مش هيشتغل على الموقع اللايف.
+
+---
+
+## 7) هيكل البيانات (Firestore Collections)
+
+- **launches**: name, developerId, developerName, region (east/west/sahel/sokhna), coverImage, gallery[], priceStart, launchStart, launchEnd, bestTimeToBuy, unitTypes[], description
+- **developers**: name, logo, description
+- **users**: name, email, phone, role (user/admin/superadmin)
+- **contactSubmissions**: name, phone, unitType, preferredDate (optional), launchId (nullable = عام), launchName, userId, userEmail
+
+---
+
+## 8) الأخطاء اللي كانت في مواقع زي Nawy وعالجناها هنا
+
+- **مفيش فلترة حقيقية بالمنطقة + الديفلوبر مع بعض**: هنا اخترت منطقة، تظهرلك المشاريع اللي فيها بس، ومعاها اختيار Developer واحد داخل نفس المنطقة بالظبط.
+- **صفحة الديفلوبر بتخلط مشاريع ديفلوبرز تانيين أحيانًا**: هنا صفحة كل ديفلوبر معزولة تمامًا وبتجيب مشاريعه هو بس (query بالـ developerId).
+- **الـ Carousel ثابت أو Static (مش بيتحدث لوحده)**: هنا الكاروسيل ديناميكي 100% وبيعرض كل الـ Launches الموجودة فعليًا في قاعدة البيانات لحظيًا.
+- **مفيش تمييز واضح بين Launch جديد ومشروع قديم عادي**: الموقع كله مبني على فكرة إن كل حاجة فيه Launch، ومعاه Highlight واضح لـ "Best Time to Buy".
+- **الـ Contact Us مش موحّد**: هنا نفس الفورم شغالة في حالتين (لمشروع معين، أو Contact عام من الـ Navbar) وبتتخزن في مكان واحد يقدر الأدمن يشوفه كله.
+- **صفحة فاضية أو Crash لو مفيش بيانات**: كل صفحة هنا (Carousel, Launches, Developers) بتتعامل مع حالة "مفيش بيانات" برسالة واضحة بدل ما تعمل كراش أو تفضل فاضية غريبة.

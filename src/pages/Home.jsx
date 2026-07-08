@@ -3,11 +3,13 @@ import LaunchCarousel from '../components/LaunchCarousel'
 import DeveloperCard from '../components/DeveloperCard'
 import LaunchCard from '../components/LaunchCard'
 import RegionFilter from '../components/RegionFilter'
-import { getAllDevelopers, getAllLaunches } from '../data/firestoreApi'
+import SpecialOfferBanner from '../components/SpecialOfferBanner'
+import { getAllDevelopers, getAllLaunches, getSpecialOffer } from '../data/firestoreApi'
 
 export default function Home() {
   const [launches, setLaunches] = useState([])
   const [developers, setDevelopers] = useState([])
+  const [offer, setOffer] = useState(null)
   const [loading, setLoading] = useState(true)
   const [region, setRegion] = useState(null)
   const [developerId, setDeveloperId] = useState(null)
@@ -15,9 +17,10 @@ export default function Home() {
   useEffect(() => {
     (async () => {
       try {
-        const [l, d] = await Promise.all([getAllLaunches(), getAllDevelopers()])
+        const [l, d, o] = await Promise.all([getAllLaunches(), getAllDevelopers(), getSpecialOffer()])
         setLaunches(l)
         setDevelopers(d)
+        setOffer(o)
       } catch (e) {
         console.error('Failed to load home data', e)
       } finally {
@@ -55,6 +58,13 @@ export default function Home() {
           <LaunchCarousel launches={launches} />
         )}
       </section>
+
+      {/* Special offer — fully disappears when the admin hasn't set one */}
+      {!loading && offer && (
+        <section>
+          <SpecialOfferBanner offer={offer} />
+        </section>
+      )}
 
       {/* Developers strip */}
       <section>

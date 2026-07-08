@@ -4,8 +4,10 @@ import { useAuth } from '../context/AuthContext'
 // requireRole: undefined = just needs to be logged in
 // requireRole: 'admin' = admin or superadmin
 // requireRole: 'superadmin' = superadmin only
-export default function ProtectedRoute({ children, requireRole }) {
-  const { currentUser, isAdmin, isSuperAdmin } = useAuth()
+// requirePermission: 'launches' | 'developers' | 'submissions' — superadmin
+// always passes; a regular admin needs that specific permission switched on.
+export default function ProtectedRoute({ children, requireRole, requirePermission }) {
+  const { currentUser, isAdmin, isSuperAdmin, permissions } = useAuth()
   const location = useLocation()
 
   if (!currentUser) {
@@ -16,6 +18,9 @@ export default function ProtectedRoute({ children, requireRole }) {
   }
   if (requireRole === 'superadmin' && !isSuperAdmin) {
     return <Navigate to="/" replace />
+  }
+  if (requirePermission && !isSuperAdmin && !permissions[requirePermission]) {
+    return <Navigate to="/admin" replace />
   }
   return children
 }
