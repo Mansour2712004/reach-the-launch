@@ -1,0 +1,49 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function userRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (userRole() == 'admin' || userRole() == 'superadmin');
+    }
+
+    function isSuperAdmin() {
+      return isSignedIn() && userRole() == 'superadmin';
+    }
+
+    // Anyone (including guests) can browse launches & developers.
+    match /launches/{launchId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /developers/{devId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Users can read/create their own profile; only superadmin can change roles.
+    match /users/{uid} {
+      allow read: if isSignedIn() && (request.auth.uid == uid || isAdmin());
+      allow create: if isSignedIn() && request.auth.uid == uid;
+      allow update: if isSignedIn() && request.auth.uid == uid && request.resource.data.role == resource.data.role
+                    || isSuperAdmin();
+      allow delete: if isSuperAdmin();
+    }
+
+    // Any signed-in user can submit a contact request, but only admins can read them.
+    match /contactSubmissions/{subId} {
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow read: if isAdmin();
+      allow update, delete: if isAdmin();
+    }
+  }
+}
