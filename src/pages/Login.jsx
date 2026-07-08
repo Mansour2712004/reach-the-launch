@@ -1,50 +1,56 @@
-import { useState } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
+import { useEffect, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
-  const { login, loginWithGoogle } = useAuth()
-  const navigate = useNavigate()
-  const location = useLocation()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [googleLoading, setGoogleLoading] = useState(false)
+  const { login, loginWithGoogle, currentUser } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
-  const from = location.state?.from?.pathname || '/'
+  const from = location.state?.from?.pathname || "/";
+
+  useEffect(() => {
+    if (currentUser) navigate(from, { replace: true });
+  }, [currentUser]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function handleSubmit(e) {
-    e.preventDefault()
-    setError('')
-    setLoading(true)
+    e.preventDefault();
+    setError("");
+    setLoading(true);
     try {
-      await login(email, password)
-      navigate(from, { replace: true })
+      await login(email, password);
+      navigate(from, { replace: true });
     } catch (err) {
-      setError('Incorrect email or password.')
+      setError("Incorrect email or password.");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 
   async function handleGoogle() {
-    setError('')
-    setGoogleLoading(true)
+    setError("");
+    setGoogleLoading(true);
     try {
-      await loginWithGoogle()
-      navigate(from, { replace: true })
+      const user = await loginWithGoogle();
+      if (user) navigate(from, { replace: true });
     } catch (err) {
-      setError('Could not sign in with Google. Please try again.')
+      setError("Could not sign in with Google. Please try again.");
     } finally {
-      setGoogleLoading(false)
+      setGoogleLoading(false);
     }
   }
 
   return (
     <div className="max-w-md mx-auto px-4 py-16">
       <h1 className="text-2xl font-display font-bold mb-1">Welcome Back</h1>
-      <p className="text-mist text-sm mb-8">Sign in to contact us and track your favorite launches.</p>
+      <p className="text-mist text-sm mb-8">
+        Sign in to contact us and track your favorite launches.
+      </p>
 
       <button
         type="button"
@@ -53,12 +59,24 @@ export default function Login() {
         className="w-full flex items-center justify-center gap-3 py-2.5 rounded-full bg-white text-ink font-semibold text-sm hover:bg-gray-100 transition-colors disabled:opacity-60 mb-4"
       >
         <svg width="18" height="18" viewBox="0 0 48 48">
-          <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.9 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 8 3l5.7-5.7C34.6 6 29.6 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-3.5z"/>
-          <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.9 18.9 13 24 13c3.1 0 5.8 1.1 8 3l5.7-5.7C34.6 6 29.6 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/>
-          <path fill="#4CAF50" d="M24 44c5.5 0 10.4-1.9 14.3-5.1l-6.6-5.6C29.6 35.1 27 36 24 36c-5.3 0-9.7-3.1-11.3-7.5l-6.5 5C9.6 39.7 16.3 44 24 44z"/>
-          <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.2-4.2 5.5l6.6 5.6C40.9 36.4 44 30.9 44 24c0-1.3-.1-2.7-.4-3.5z"/>
+          <path
+            fill="#FFC107"
+            d="M43.6 20.5H42V20H24v8h11.3C33.7 32.9 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 8 3l5.7-5.7C34.6 6 29.6 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-3.5z"
+          />
+          <path
+            fill="#FF3D00"
+            d="M6.3 14.7l6.6 4.8C14.6 15.9 18.9 13 24 13c3.1 0 5.8 1.1 8 3l5.7-5.7C34.6 6 29.6 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"
+          />
+          <path
+            fill="#4CAF50"
+            d="M24 44c5.5 0 10.4-1.9 14.3-5.1l-6.6-5.6C29.6 35.1 27 36 24 36c-5.3 0-9.7-3.1-11.3-7.5l-6.5 5C9.6 39.7 16.3 44 24 44z"
+          />
+          <path
+            fill="#1976D2"
+            d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.2-4.2 5.5l6.6 5.6C40.9 36.4 44 30.9 44 24c0-1.3-.1-2.7-.4-3.5z"
+          />
         </svg>
-        {googleLoading ? 'Connecting…' : 'Continue with Google'}
+        {googleLoading ? "Connecting…" : "Continue with Google"}
       </button>
 
       <div className="flex items-center gap-3 mb-4">
@@ -67,7 +85,10 @@ export default function Login() {
         <div className="h-px flex-1 bg-white/10" />
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4 bg-surface border border-white/5 rounded-xl p-6">
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-4 bg-surface border border-white/5 rounded-xl p-6"
+      >
         <div>
           <label className="block text-sm text-mist mb-1">Email</label>
           <input
@@ -94,13 +115,16 @@ export default function Login() {
           disabled={loading}
           className="w-full py-2.5 rounded-full bg-gold text-ink font-semibold text-sm hover:bg-gold2 transition-colors disabled:opacity-60"
         >
-          {loading ? 'Signing in…' : 'Sign In'}
+          {loading ? "Signing in…" : "Sign In"}
         </button>
       </form>
 
       <p className="text-sm text-mist mt-4 text-center">
-        Don't have an account? <Link to="/register" className="text-gold hover:underline">Create one</Link>
+        Don't have an account?{" "}
+        <Link to="/register" className="text-gold hover:underline">
+          Create one
+        </Link>
       </p>
     </div>
-  )
+  );
 }
