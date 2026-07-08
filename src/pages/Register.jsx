@@ -1,9 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
 export default function Register() {
-  const { register, loginWithGoogle } = useAuth()
+  const { register, loginWithGoogle, currentUser } = useAuth()
   const navigate = useNavigate()
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
@@ -13,12 +13,16 @@ export default function Register() {
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
 
+  useEffect(() => {
+    if (currentUser) navigate('/')
+  }, [currentUser]) // eslint-disable-line react-hooks/exhaustive-deps
+
   async function handleGoogle() {
     setError('')
     setGoogleLoading(true)
     try {
-      await loginWithGoogle()
-      navigate('/')
+      const user = await loginWithGoogle()
+      if (user) navigate('/')
     } catch (err) {
       setError('Could not sign in with Google. Please try again.')
     } finally {
