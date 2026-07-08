@@ -15,9 +15,6 @@ import { auth, db } from "../firebase";
 
 const AuthContext = createContext(null);
 
-// Most mobile browsers (mobile Safari especially, and any in-app browser
-// like Instagram/Facebook's) block or silently fail signInWithPopup.
-// Redirect-based sign-in is the reliable option there.
 const isMobile =
   typeof navigator !== "undefined" &&
   /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
@@ -37,7 +34,6 @@ async function ensureUserDoc(user) {
   return userDoc;
 }
 
-// Roles: 'user' (client), 'admin' (sub-admin, promoted), 'superadmin' (first/root admin)
 export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [profile, setProfile] = useState(null);
