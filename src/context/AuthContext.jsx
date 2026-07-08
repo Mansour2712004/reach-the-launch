@@ -2,9 +2,11 @@ import { createContext, useContext, useEffect, useState } from 'react'
 import {
   GoogleAuthProvider,
   createUserWithEmailAndPassword,
+  getRedirectResult,
   onAuthStateChanged,
   signInWithEmailAndPassword,
   signInWithPopup,
+  signInWithRedirect,
   signOut,
   updateProfile,
 } from 'firebase/auth'
@@ -13,10 +15,31 @@ import { auth, db } from '../firebase'
 
 const AuthContext = createContext(null)
 
+// Most mobile browsers (mobile Safari especially, and any in-app browser
+// like Instagram/Facebook's) block or silently fail signInWithPopup.
+// Redirect-based sign-in is the reliable option there.
+const isMobile =
+  typeof navigator !== 'undefined' && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+
+async function ensureUserDoc(user) {
+  const ref = doc(db, 'users', user.uid)
+  const snap = await getDoc(ref)
+  if (snap.exists()) return snap.data()
+  const userDoc = {
+    name: user.displayName || 'New User',
+    email: user.email,
+    phone: '',
+    role: 'user',
+    createdAt: serverTimestamp(),
+  }
+  await setDoc(ref, userDoc)
+  return userDoc
+}
+
 // Roles: 'user' (client), 'admin' (sub-admin, promoted), 'superadmin' (first/root admin)
 export function AuthProvider({ children }) {
-  const [currentUser, setCurrentUser] = useState(null) // firebase auth user
-  const [profile, setProfile] = useState(null) // firestore user doc (has role, name, phone)
+  const [currentUser, setCurrentUser] = useState(null)
+  const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -31,6 +54,12 @@ export function AuthProvider({ children }) {
       setLoading(false)
     })
     return unsub
+  }, [])
+
+  useEffect(() => {
+    getRedirectResult(auth).catch((err) => {
+      console.error('Google redirect sign-in failed', err)
+    })
   }, [])
 
   async function register({ name, email, password, phone }) {
@@ -55,29 +84,28 @@ export function AuthProvider({ children }) {
     return cred.user
   }
 
-  // "Continue with Google" — same idea as Facebook/Google sign-in on other
-  // apps: the person picks their Gmail account and never types a password
-  // for this site. First-time Google sign-ins get a 'user' profile created
-  // automatically; returning ones just log in.
   async function loginWithGoogle() {
     const provider = new GoogleAuthProvider()
-    const cred = await signInWithPopup(auth, provider)
-    const ref = doc(db, 'users', cred.user.uid)
-    const snap = await getDoc(ref)
-    if (!snap.exists()) {
-      const userDoc = {
-        name: cred.user.displayName || 'New User',
-        email: cred.user.email,
-        phone: '',
-        role: 'user',
-        createdAt: serverTimestamp(),
-      }
-      await setDoc(ref, userDoc)
-      setProfile(userDoc)
-    } else {
-      setProfile(snap.data())
+
+    if (isMobile) {
+      await signInWithRedirect(auth, provider)
+      return null
     }
-    return cred.user
+
+    try {
+      const cred = await signInWithPopup(auth, provider)
+      const userDoc = await ensureUserDoc(cred.user)
+      setProfile(userDoc)
+      return cred.user
+    } catch (err) {
+      if (
+        ['auth/popup-blocked', 'auth/popup-closed-by-user', 'auth/operation-not-supported-in-this-environment', 'auth/cancelled-popup-request'].includes(err.code)
+      ) {
+        await signInWithRedirect(auth, provider)
+        return null
+      }
+      throw err
+    }
   }
 
   function logout() {
