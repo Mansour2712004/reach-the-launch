@@ -5,16 +5,26 @@ export default function DeveloperCard({ developer }) {
   return (
     <Link
       to={`/developers/${developer.id}`}
-      className="flex flex-col items-center justify-center gap-3 p-5 rounded-xl bg-surface border border-white/5 hover:border-teal/50 hover:-translate-y-0.5 transition-all"
+      className="flex flex-col rounded-xl overflow-hidden bg-surface border border-white/5 hover:border-teal/50 hover:-translate-y-0.5 transition-all group"
     >
-      <div className="w-16 h-16 rounded-full bg-surface2 flex items-center justify-center overflow-hidden border border-white/10">
+      <div className="h-28 bg-surface2 overflow-hidden">
         {developer.logo ? (
-          <img src={developer.logo} alt={developer.name} className="w-full h-full object-cover" />
+          <img
+            src={developer.logo}
+            alt={developer.name}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          />
         ) : (
-          <span className="text-gold font-display font-bold text-lg">{developer.name?.[0]}</span>
+          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-surface2 to-ink">
+            <span className="text-gold font-display font-bold text-3xl">{developer.name?.[0]}</span>
+          </div>
         )}
       </div>
-      <span className="text-sm font-medium text-white text-center">{developer.name}</span>
+      <div className="py-3 px-2 text-center">
+        <span className="text-sm font-medium text-white group-hover:text-gold transition-colors">
+          {developer.name}
+        </span>
+      </div>
     </Link>
   )
 }
