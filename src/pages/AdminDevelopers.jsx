@@ -17,6 +17,7 @@ export default function AdminDevelopers() {
   const [editingId, setEditingId] = useState(null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [logoPreviewFailed, setLogoPreviewFailed] = useState(false)
 
   async function load() {
     setLoading(true)
@@ -38,6 +39,7 @@ export default function AdminDevelopers() {
   function startEdit(dev) {
     setEditingId(dev.id)
     setForm({ name: dev.name || '', logo: dev.logo || '', description: dev.description || '' })
+    setLogoPreviewFailed(false)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -45,6 +47,7 @@ export default function AdminDevelopers() {
     setEditingId(null)
     setForm(emptyForm)
     setError('')
+    setLogoPreviewFailed(false)
   }
 
   async function handleSubmit(e) {
@@ -105,14 +108,25 @@ export default function AdminDevelopers() {
           <label className="block text-sm text-mist mb-1">Logo Image URL <span className="text-mist/60">(optional)</span></label>
           <input
             value={form.logo}
-            onChange={(e) => setForm((f) => ({ ...f, logo: e.target.value }))}
+            onChange={(e) => { setForm((f) => ({ ...f, logo: e.target.value })); setLogoPreviewFailed(false) }}
             placeholder="https://..."
             className="w-full rounded-lg bg-surface2 border border-white/10 px-3 py-2.5 text-sm focus:outline-none focus:border-gold"
           />
-          {form.logo && (
+          {form.logo && !logoPreviewFailed && (
             <div className="mt-2 w-14 h-14 rounded-full overflow-hidden border border-white/10">
-              <img src={form.logo} alt="Logo preview" className="w-full h-full object-cover" />
+              <img
+                src={form.logo}
+                alt="Logo preview"
+                className="w-full h-full object-cover"
+                onError={() => setLogoPreviewFailed(true)}
+              />
             </div>
+          )}
+          {logoPreviewFailed && (
+            <p className="text-red-400 text-xs mt-2">
+              This link doesn't load as an image (the site may block hotlinking). Try a direct
+              image link instead — right-click the image → "Copy image address".
+            </p>
           )}
         </div>
 

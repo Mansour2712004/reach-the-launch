@@ -10,6 +10,7 @@ export default function DeveloperPage() {
   const [developer, setDeveloper] = useState(null)
   const [launches, setLaunches] = useState([])
   const [loading, setLoading] = useState(true)
+  const [logoFailed, setLogoFailed] = useState(false)
 
   useEffect(() => {
     (async () => {
@@ -21,11 +22,14 @@ export default function DeveloperPage() {
         ])
         setDeveloper(devSnap.exists() ? { id: devSnap.id, ...devSnap.data() } : null)
         setLaunches(devLaunches)
+        setLogoFailed(false)
       } finally {
         setLoading(false)
       }
     })()
   }, [id])
+
+  const showLogo = developer?.logo && !logoFailed
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 space-y-6">
@@ -33,14 +37,19 @@ export default function DeveloperPage() {
         <div className="h-24 rounded-xl bg-surface animate-pulse" />
       ) : (
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-full bg-surface2 flex items-center justify-center overflow-hidden border border-white/10">
-            {developer?.logo ? (
-              <img src={developer.logo} alt={developer?.name} className="w-full h-full object-cover" />
+          <div className="w-16 h-16 rounded-full bg-surface2 flex items-center justify-center overflow-hidden border border-white/10 flex-shrink-0">
+            {showLogo ? (
+              <img
+                src={developer.logo}
+                alt={developer?.name}
+                className="w-full h-full object-cover"
+                onError={() => setLogoFailed(true)}
+              />
             ) : (
               <span className="text-gold font-display font-bold text-lg">{developer?.name?.[0]}</span>
             )}
           </div>
-          <div>
+          <div className="min-w-0">
             <h1 className="text-2xl md:text-3xl font-display font-bold">{developer?.name || 'Developer'}</h1>
             <p className="text-mist text-sm mt-1">{developer?.description}</p>
           </div>
