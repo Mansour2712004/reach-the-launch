@@ -33,14 +33,14 @@ export default function DeveloperPage() {
         <div className="h-24 rounded-xl bg-surface animate-pulse" />
       ) : (
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-full bg-surface2 flex items-center justify-center overflow-hidden border border-white/10">
+          <div className="w-16 h-16 rounded-full bg-surface2 flex items-center justify-center overflow-hidden border border-white/10 flex-shrink-0">
             {developer?.logo ? (
               <img src={developer.logo} alt={developer?.name} className="w-full h-full object-cover" />
             ) : (
               <span className="text-gold font-display font-bold text-lg">{developer?.name?.[0]}</span>
             )}
           </div>
-          <div>
+          <div className="min-w-0">
             <h1 className="text-2xl md:text-3xl font-display font-bold">{developer?.name || 'Developer'}</h1>
             <p className="text-mist text-sm mt-1">{developer?.description}</p>
           </div>
