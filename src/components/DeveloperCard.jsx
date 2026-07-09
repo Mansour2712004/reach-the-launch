@@ -1,10 +1,10 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useState } from "react";
+import { Link } from "react-router-dom";
 
 // Clicking a developer opens ONLY that developer's launches (see DeveloperPage).
 export default function DeveloperCard({ developer }) {
-  const [logoFailed, setLogoFailed] = useState(false)
-  const showLogo = developer.logo && !logoFailed
+  const [logoFailed, setLogoFailed] = useState(false);
+  const showLogo = developer.logo && !logoFailed;
 
   return (
     <Link
@@ -21,7 +21,9 @@ export default function DeveloperCard({ developer }) {
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-surface2 to-ink">
-            <span className="text-gold font-display font-bold text-3xl">{developer.name?.[0]}</span>
+            <span className="text-gold font-display font-bold text-3xl">
+              {developer.name?.[0]}
+            </span>
           </div>
         )}
       </div>
@@ -31,5 +33,5 @@ export default function DeveloperCard({ developer }) {
         </span>
       </div>
     </Link>
-  )
+  );
 }
