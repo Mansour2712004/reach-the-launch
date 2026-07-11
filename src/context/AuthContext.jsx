@@ -15,6 +15,18 @@ import { auth, db } from '../firebase'
 
 const AuthContext = createContext(null)
 
+// If Firebase Auth genuinely hangs (flaky network, an ad-blocker/extension
+// interfering with Google's scripts, etc.) the person should see a clear
+// error and be able to retry — never an endless spinner.
+function withTimeout(promise, ms = 15000) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('auth/timeout')), ms)
+    ),
+  ])
+}
+
 // Most mobile browsers (mobile Safari especially, and any in-app browser
 // like Instagram/Facebook's) block or silently fail signInWithPopup.
 // Redirect-based sign-in is the reliable option there.
@@ -65,8 +77,8 @@ export function AuthProvider({ children }) {
   }, [])
 
   async function register({ name, email, password, phone }) {
-    const cred = await createUserWithEmailAndPassword(auth, email, password)
-    await updateProfile(cred.user, { displayName: name })
+    const cred = await withTimeout(createUserWithEmailAndPassword(auth, email, password))
+    await withTimeout(updateProfile(cred.user, { displayName: name }))
     const userDoc = {
       name,
       email,
@@ -74,14 +86,14 @@ export function AuthProvider({ children }) {
       role: 'user',
       createdAt: serverTimestamp(),
     }
-    await setDoc(doc(db, 'users', cred.user.uid), userDoc)
+    await withTimeout(setDoc(doc(db, 'users', cred.user.uid), userDoc))
     setProfile(userDoc)
     return cred.user
   }
 
   async function login(email, password) {
-    const cred = await signInWithEmailAndPassword(auth, email, password)
-    const snap = await getDoc(doc(db, 'users', cred.user.uid))
+    const cred = await withTimeout(signInWithEmailAndPassword(auth, email, password))
+    const snap = await withTimeout(getDoc(doc(db, 'users', cred.user.uid)))
     setProfile(snap.exists() ? snap.data() : null)
     return cred.user
   }
@@ -105,8 +117,8 @@ export function AuthProvider({ children }) {
     }
 
     try {
-      const cred = await signInWithPopup(auth, provider)
-      const userDoc = await ensureUserDoc(cred.user)
+      const cred = await withTimeout(signInWithPopup(auth, provider))
+      const userDoc = await withTimeout(ensureUserDoc(cred.user))
       setProfile(userDoc)
       return cred.user
     } catch (err) {

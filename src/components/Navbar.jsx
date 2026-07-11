@@ -9,8 +9,11 @@ export default function Navbar() {
   const [open, setOpen] = useState(false)
 
   async function handleLogout() {
+    // Navigate away from any protected page *first* — if we call logout()
+    // first, ProtectedRoute sees currentUser go null while still mounted
+    // and can win the race by redirecting to /login instead of home.
+    navigate('/', { replace: true })
     await logout()
-    navigate('/')
   }
 
   const links = [

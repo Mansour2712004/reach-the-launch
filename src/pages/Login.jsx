@@ -28,7 +28,11 @@ export default function Login() {
       await login(email, password)
       navigate(from, { replace: true })
     } catch (err) {
-      setError('Incorrect email or password.')
+      setError(
+        err.message === 'auth/timeout'
+          ? 'This is taking too long — check your connection and try again.'
+          : 'Incorrect email or password.'
+      )
     } finally {
       setLoading(false)
     }
@@ -41,7 +45,11 @@ export default function Login() {
       const user = await loginWithGoogle()
       if (user) navigate(from, { replace: true }) // null on mobile — redirect handles it
     } catch (err) {
-      setError('Could not sign in with Google. Please try again.')
+      setError(
+        err.message === 'auth/timeout'
+          ? 'This is taking too long — check your connection and try again.'
+          : 'Could not sign in with Google. Please try again.'
+      )
     } finally {
       setGoogleLoading(false)
     }

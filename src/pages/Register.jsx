@@ -24,7 +24,11 @@ export default function Register() {
       const user = await loginWithGoogle()
       if (user) navigate('/') // null on mobile — redirect handles it
     } catch (err) {
-      setError('Could not sign in with Google. Please try again.')
+      setError(
+        err.message === 'auth/timeout'
+          ? 'This is taking too long — check your connection and try again.'
+          : 'Could not sign in with Google. Please try again.'
+      )
     } finally {
       setGoogleLoading(false)
     }
@@ -42,7 +46,11 @@ export default function Register() {
       await register({ name, email, password, phone })
       navigate('/')
     } catch (err) {
-      setError(err.code === 'auth/email-already-in-use' ? 'That email is already registered.' : 'Could not create account.')
+      if (err.message === 'auth/timeout') {
+        setError('This is taking too long — check your connection and try again.')
+      } else {
+        setError(err.code === 'auth/email-already-in-use' ? 'That email is already registered.' : 'Could not create account.')
+      }
     } finally {
       setLoading(false)
     }
