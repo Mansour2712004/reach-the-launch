@@ -33,6 +33,17 @@ function withTimeout(promise, ms = 15000) {
 const isMobile =
   typeof navigator !== 'undefined' && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
 
+// Google's own policy actively refuses to load its sign-in page inside
+// "in-app browsers" (the mini-browser WhatsApp/Instagram/Facebook/TikTok
+// open when you tap a link inside their app) — it just fails or shows a
+// warning page, and Firebase/our code never even gets a response back.
+// Opening the exact same link in the phone's real browser (Safari/Chrome)
+// works fine. This detects the common ones so we can say so up front
+// instead of the button silently doing nothing.
+const isInAppBrowser =
+  typeof navigator !== 'undefined' &&
+  /FBAN|FBAV|Instagram|Line\/|MicroMessenger|TikTok|Twitter|WhatsApp/i.test(navigator.userAgent)
+
 async function ensureUserDoc(user) {
   const ref = doc(db, 'users', user.uid)
   const snap = await getDoc(ref)
@@ -127,10 +138,19 @@ export function AuthProvider({ children }) {
   // getRedirectResult effect above and onAuthStateChanged pick it up once
   // the browser returns.
   async function loginWithGoogle() {
+    if (isInAppBrowser) {
+      throw new Error('auth/in-app-browser')
+    }
+
     const provider = new GoogleAuthProvider()
 
     if (isMobile) {
-      await signInWithRedirect(auth, provider)
+      try {
+        await signInWithRedirect(auth, provider)
+      } catch (err) {
+        console.error('signInWithRedirect failed to start', err)
+        throw err
+      }
       return null
     }
 

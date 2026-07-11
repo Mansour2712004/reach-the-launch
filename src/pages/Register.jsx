@@ -24,11 +24,17 @@ export default function Register() {
       const user = await loginWithGoogle()
       if (user) navigate('/') // null on mobile — redirect handles it
     } catch (err) {
-      setError(
-        err.message === 'auth/timeout'
-          ? 'This is taking too long — check your connection and try again.'
-          : 'Could not sign in with Google. Please try again.'
-      )
+      if (err.message === 'auth/in-app-browser') {
+        setError(
+          'Google sign-in doesn\'t work inside this app\'s built-in browser. Tap the ⋯ or share icon and choose "Open in Browser" (Safari or Chrome), or use email/password below instead.'
+        )
+      } else {
+        setError(
+          err.message === 'auth/timeout'
+            ? 'This is taking too long — check your connection and try again.'
+            : 'Could not sign in with Google. Please try again.'
+        )
+      }
     } finally {
       setGoogleLoading(false)
     }
