@@ -70,10 +70,28 @@ export function AuthProvider({ children }) {
 
   // Picks up the result once the browser comes back from a Google
   // redirect sign-in (mobile flow). No-op on every other page load.
+  const [authError, setAuthError] = useState('')
+
+  // Picks up the result once the browser comes back from a Google
+  // redirect sign-in (mobile flow). This was previously only checking for
+  // errors and silently discarding a *successful* result — meaning a new
+  // Google user on mobile never got their Firestore profile created, and
+  // any real failure (e.g. domain not authorized) was invisible in the UI.
   useEffect(() => {
-    getRedirectResult(auth).catch((err) => {
-      console.error('Google redirect sign-in failed', err)
-    })
+    getRedirectResult(auth)
+      .then(async (result) => {
+        if (!result) return // normal page load, not a return from redirect
+        const userDoc = await ensureUserDoc(result.user)
+        setProfile(userDoc)
+      })
+      .catch((err) => {
+        console.error('Google redirect sign-in failed', err)
+        setAuthError(
+          err.code === 'auth/unauthorized-domain'
+            ? "This site's domain isn't authorized for Google sign-in yet."
+            : 'Google sign-in failed. Please try again.'
+        )
+      })
   }, [])
 
   async function register({ name, email, password, phone }) {
@@ -163,6 +181,7 @@ export function AuthProvider({ children }) {
     isSuperAdmin,
     permissions,
     loading,
+    authError,
     register,
     login,
     loginWithGoogle,

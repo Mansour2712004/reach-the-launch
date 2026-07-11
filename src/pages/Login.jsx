@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
 export default function Login() {
-  const { login, loginWithGoogle, currentUser } = useAuth()
+  const { login, loginWithGoogle, currentUser, authError } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const [email, setEmail] = useState('')
@@ -19,6 +19,14 @@ export default function Login() {
   useEffect(() => {
     if (currentUser) navigate(from, { replace: true })
   }, [currentUser]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Surfaces a failure that happened during the mobile redirect flow
+  // (e.g. arriving back from Google with an unauthorized-domain error) —
+  // previously this only went to the console and looked like nothing
+  // happened at all.
+  useEffect(() => {
+    if (authError) setError(authError)
+  }, [authError])
 
   async function handleSubmit(e) {
     e.preventDefault()

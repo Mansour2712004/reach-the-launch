@@ -1,65 +1,51 @@
-import { useEffect, useMemo, useState } from "react";
-import LaunchCarousel from "../components/LaunchCarousel";
-import DeveloperCard from "../components/DeveloperCard";
-import LaunchCard from "../components/LaunchCard";
-import RegionFilter from "../components/RegionFilter";
-import SpecialOfferBanner from "../components/SpecialOfferBanner";
-import {
-  getAllDevelopers,
-  getAllLaunches,
-  getSpecialOffer,
-} from "../data/firestoreApi";
+import { useEffect, useMemo, useState } from 'react'
+import LaunchCarousel from '../components/LaunchCarousel'
+import DeveloperCard from '../components/DeveloperCard'
+import LaunchCard from '../components/LaunchCard'
+import RegionFilter from '../components/RegionFilter'
+import SpecialOfferBanner from '../components/SpecialOfferBanner'
+import { getAllDevelopers, getAllLaunches, getSpecialOffer } from '../data/firestoreApi'
 
 export default function Home() {
-  const [launches, setLaunches] = useState([]);
-  const [developers, setDevelopers] = useState([]);
-  const [offer, setOffer] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [region, setRegion] = useState(null);
-  const [developerId, setDeveloperId] = useState(null);
+  const [launches, setLaunches] = useState([])
+  const [developers, setDevelopers] = useState([])
+  const [offer, setOffer] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [region, setRegion] = useState(null)
+  const [developerId, setDeveloperId] = useState(null)
 
   useEffect(() => {
     (async () => {
       try {
-        const [l, d] = await Promise.all([
-          getAllLaunches(),
-          getAllDevelopers(),
-        ]);
-        setLaunches(l);
-        setDevelopers(d);
+        const [l, d, o] = await Promise.all([getAllLaunches(), getAllDevelopers(), getSpecialOffer()])
+        setLaunches(l)
+        setDevelopers(d)
+        setOffer(o)
       } catch (e) {
-        console.error("Failed to load home data", e);
+        console.error('Failed to load home data', e)
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-
-      try {
-        setOffer(await getSpecialOffer());
-      } catch (e) {
-        console.error("Failed to load special offer", e);
-      }
-    })();
-  }, []);
+    })()
+  }, [])
 
   const filtered = useMemo(() => {
     return launches.filter((l) => {
-      if (region && l.region !== region) return false;
-      if (developerId && l.developerId !== developerId) return false;
-      return true;
-    });
-  }, [launches, region, developerId]);
+      if (region && l.region !== region) return false
+      if (developerId && l.developerId !== developerId) return false
+      return true
+    })
+  }, [launches, region, developerId])
 
   const developersInRegion = useMemo(() => {
-    if (!region) return [];
-    const ids = new Set(
-      launches.filter((l) => l.region === region).map((l) => l.developerId),
-    );
-    return developers.filter((d) => ids.has(d.id));
-  }, [region, launches, developers]);
+    if (!region) return []
+    const ids = new Set(launches.filter((l) => l.region === region).map((l) => l.developerId))
+    return developers.filter((d) => ids.has(d.id))
+  }, [region, launches, developers])
 
   function handleSelectRegion(r) {
-    setRegion(r);
-    setDeveloperId(null);
+    setRegion(r)
+    setDeveloperId(null)
   }
 
   return (
@@ -84,12 +70,9 @@ export default function Home() {
       <section>
         <div className="flex items-end justify-between mb-5">
           <div>
-            <h2 className="text-xl md:text-2xl font-display font-bold">
-              Browse by Developer
-            </h2>
+            <h2 className="text-xl md:text-2xl font-display font-bold">Browse by Developer</h2>
             <p className="text-mist text-sm mt-1">
-              Tap a developer to see only their launches — no noise from anyone
-              else.
+              Tap a developer to see only their launches — no noise from anyone else.
             </p>
           </div>
         </div>
@@ -106,9 +89,7 @@ export default function Home() {
 
       {/* Region + developer filter */}
       <section>
-        <h2 className="text-xl md:text-2xl font-display font-bold mb-5">
-          Find Launches by Region
-        </h2>
+        <h2 className="text-xl md:text-2xl font-display font-bold mb-5">Find Launches by Region</h2>
         <RegionFilter
           selectedRegion={region}
           onSelectRegion={handleSelectRegion}
@@ -119,9 +100,7 @@ export default function Home() {
 
         <div className="mt-6 grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {filtered.length === 0 && !loading && (
-            <p className="text-mist text-sm col-span-full">
-              No launches match this filter yet.
-            </p>
+            <p className="text-mist text-sm col-span-full">No launches match this filter yet.</p>
           )}
           {filtered.map((l) => (
             <LaunchCard key={l.id} launch={l} />
@@ -129,5 +108,5 @@ export default function Home() {
         </div>
       </section>
     </div>
-  );
+  )
 }
