@@ -3,6 +3,7 @@ import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import ProtectedRoute from './components/ProtectedRoute'
 import ScrollToTop from './components/ScrollToTop'
+import InAppBrowserBanner from './components/InAppBrowserBanner'
 
 import Home from './pages/Home'
 import AllLaunches from './pages/AllLaunches'
@@ -20,12 +21,14 @@ import AdminDevelopers from './pages/AdminDevelopers'
 import AdminSubmissions from './pages/AdminSubmissions'
 import AdminSpecialOffer from './pages/AdminSpecialOffer'
 import AdminUsers from './pages/AdminUsers'
+import AdminWhatsapp from './pages/AdminWhatsapp'
 import NotFound from './pages/NotFound'
 
 export default function App() {
   return (
     <div className="min-h-screen flex flex-col">
       <ScrollToTop />
+      <InAppBrowserBanner />
       <Navbar />
       <main className="flex-1">
         <Routes>
@@ -100,6 +103,14 @@ export default function App() {
               element={
                 <ProtectedRoute requirePermission="offers">
                   <AdminSpecialOffer />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="whatsapp"
+              element={
+                <ProtectedRoute requireRole="superadmin">
+                  <AdminWhatsapp />
                 </ProtectedRoute>
               }
             />

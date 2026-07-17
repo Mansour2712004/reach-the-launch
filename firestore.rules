@@ -47,6 +47,13 @@ service cloud.firestore {
       allow write: if hasPermission('offers');
     }
 
+    // WhatsApp contact number — public read (the whole point is anyone can
+    // see/use it), superadmin-only write (never delegated to sub-admins).
+    match /settings/whatsapp {
+      allow read: if true;
+      allow write: if isSuperAdmin();
+    }
+
     // Users can read/create their own profile; only superadmin can change
     // roles or permissions. Browsing the full user list is superadmin-only.
     match /users/{uid} {

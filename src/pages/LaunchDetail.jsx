@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import { getLaunchById } from '../data/firestoreApi'
 import { regionLabel } from '../data/constants'
 import ContactForm from '../components/ContactForm'
+import { useSEO } from '../hooks/useSEO'
 
 export default function LaunchDetail() {
   const { id } = useParams()
@@ -20,6 +21,15 @@ export default function LaunchDetail() {
       }
     })()
   }, [id])
+
+  useSEO({
+    title: launch?.name,
+    description: launch
+      ? `${launch.name} by ${launch.developerName} in ${regionLabel(launch.region)}. ${launch.bestTimeToBuy || launch.description || ''}`.slice(0, 160)
+      : undefined,
+    keywords: launch?.keywords,
+    image: launch?.coverImage,
+  })
 
   if (loading) {
     return <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10"><div className="h-96 rounded-2xl bg-surface animate-pulse" /></div>
@@ -100,6 +110,16 @@ export default function LaunchDetail() {
           <div>
             <h2 className="font-display font-semibold text-lg mb-2">About the Project</h2>
             <p className="text-mist leading-relaxed whitespace-pre-line">{launch.description}</p>
+          </div>
+        )}
+
+        {launch.keywords?.length > 0 && (
+          <div className="flex flex-wrap gap-2 pt-2">
+            {launch.keywords.map((k) => (
+              <span key={k} className="px-3 py-1 rounded-full bg-surface2 border border-white/10 text-xs text-mist">
+                {k}
+              </span>
+            ))}
           </div>
         )}
       </div>

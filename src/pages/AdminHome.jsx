@@ -12,7 +12,10 @@ export default function AdminHome() {
   ].filter((c) => permissions[c.key])
 
   if (isSuperAdmin) {
-    cards.push({ key: 'users', to: '/admin/users', title: 'Manage Admins', desc: 'Grant or revoke admin access and permissions.' })
+    cards.push(
+      { key: 'whatsapp', to: '/admin/whatsapp', title: 'WhatsApp Number', desc: 'Set the number clients can reach you on directly.' },
+      { key: 'users', to: '/admin/users', title: 'Manage Admins', desc: 'Grant or revoke admin access and permissions.' }
+    )
   }
 
   if (cards.length === 0) {

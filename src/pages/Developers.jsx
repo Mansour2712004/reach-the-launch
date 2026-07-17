@@ -1,8 +1,15 @@
 import { useEffect, useState } from 'react'
 import DeveloperCard from '../components/DeveloperCard'
 import { getAllDevelopers } from '../data/firestoreApi'
+import { useSEO } from '../hooks/useSEO'
 
 export default function Developers() {
+  useSEO({
+    title: 'Real Estate Developers in Egypt',
+    description: 'Browse every real estate developer on Reach The Launch and see only their current launches.',
+    keywords: ['شركات مطورين عقاريين', 'developers Egypt real estate', 'real estate companies Egypt'],
+  })
+
   const [developers, setDevelopers] = useState([])
   const [loading, setLoading] = useState(true)
 

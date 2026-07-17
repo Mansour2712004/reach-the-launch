@@ -5,8 +5,20 @@ import LaunchCard from '../components/LaunchCard'
 import RegionFilter from '../components/RegionFilter'
 import SpecialOfferBanner from '../components/SpecialOfferBanner'
 import { getAllDevelopers, getAllLaunches, getSpecialOffer } from '../data/firestoreApi'
+import { useSEO } from '../hooks/useSEO'
 
 export default function Home() {
+  useSEO({
+    title: 'Best Real Estate Launches in Egypt',
+    description:
+      'Reach The Launch — أفضل منصة لمتابعة أحدث اللونشز العقارية في مصر. Track the best time to buy in every new property launch across East Cairo, West Cairo, North Coast and Ain Sokhna.',
+    keywords: [
+      'Reach The Launch', 'ريتش ذا لانش', 'عقارات مصر', 'لونش عقاري', 'real estate launches Egypt',
+      'East Cairo real estate', 'West Cairo real estate', 'North Coast properties', 'Ain Sokhna properties',
+      'مشاريع عقارية جديدة', 'افضل وقت شراء عقار',
+    ],
+  })
+
   const [launches, setLaunches] = useState([])
   const [developers, setDevelopers] = useState([])
   const [offer, setOffer] = useState(null)
@@ -17,14 +29,19 @@ export default function Home() {
   useEffect(() => {
     (async () => {
       try {
-        const [l, d, o] = await Promise.all([getAllLaunches(), getAllDevelopers(), getSpecialOffer()])
+        const [l, d] = await Promise.all([getAllLaunches(), getAllDevelopers()])
         setLaunches(l)
         setDevelopers(d)
-        setOffer(o)
       } catch (e) {
         console.error('Failed to load home data', e)
       } finally {
         setLoading(false)
+      }
+
+      try {
+        setOffer(await getSpecialOffer())
+      } catch (e) {
+        console.error('Failed to load special offer', e)
       }
     })()
   }, [])

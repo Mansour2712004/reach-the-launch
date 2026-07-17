@@ -4,6 +4,7 @@ import { collection, doc, getDoc } from 'firebase/firestore'
 import { db } from '../firebase'
 import LaunchCard from '../components/LaunchCard'
 import { getLaunchesByDeveloper } from '../data/firestoreApi'
+import { useSEO } from '../hooks/useSEO'
 
 export default function DeveloperPage() {
   const { id } = useParams()
@@ -11,6 +12,11 @@ export default function DeveloperPage() {
   const [launches, setLaunches] = useState([])
   const [loading, setLoading] = useState(true)
   const [logoFailed, setLogoFailed] = useState(false)
+
+  useSEO({
+    title: developer?.name,
+    description: developer ? `All current launches by ${developer.name}. ${developer.description || ''}`.slice(0, 160) : undefined,
+  })
 
   useEffect(() => {
     (async () => {

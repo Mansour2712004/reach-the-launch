@@ -2,8 +2,15 @@ import { useEffect, useMemo, useState } from 'react'
 import LaunchCard from '../components/LaunchCard'
 import RegionFilter from '../components/RegionFilter'
 import { getAllDevelopers, getAllLaunches } from '../data/firestoreApi'
+import { useSEO } from '../hooks/useSEO'
 
 export default function AllLaunches() {
+  useSEO({
+    title: 'All Real Estate Launches',
+    description: 'Browse every current property launch in Egypt — East Cairo, West Cairo, North Coast and Ain Sokhna, filterable by region and developer.',
+    keywords: ['كل اللونشات العقارية', 'لونش عقاري جديد', 'all real estate launches Egypt', 'مشاريع عقارية 2026'],
+  })
+
   const [launches, setLaunches] = useState([])
   const [developers, setDevelopers] = useState([])
   const [loading, setLoading] = useState(true)

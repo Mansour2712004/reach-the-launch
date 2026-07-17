@@ -202,6 +202,7 @@ export function AuthProvider({ children }) {
     permissions,
     loading,
     authError,
+    isInAppBrowser,
     register,
     login,
     loginWithGoogle,

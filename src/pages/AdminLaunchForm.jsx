@@ -24,6 +24,7 @@ const emptyForm = {
   bestTimeToBuy: '',
   unitTypes: [],
   description: '',
+  keywords: '',
 }
 
 export default function AdminLaunchForm() {
@@ -51,6 +52,7 @@ export default function AdminLaunchForm() {
             ...launch,
             gallery: (launch.gallery || []).join(', '),
             unitTypes: launch.unitTypes || [],
+            keywords: (launch.keywords || []).join(', '),
           })
         }
         setLoading(false)
@@ -96,6 +98,7 @@ export default function AdminLaunchForm() {
       const payload = {
         ...form,
         gallery: form.gallery.split(',').map((s) => s.trim()).filter(Boolean),
+        keywords: form.keywords.split(',').map((s) => s.trim()).filter(Boolean),
       }
       if (isEdit) {
         await updateLaunch(id, payload)
@@ -211,6 +214,23 @@ export default function AdminLaunchForm() {
         <label className="block text-sm text-mist mb-1">Description</label>
         <textarea value={form.description} onChange={(e) => update('description', e.target.value)} rows={5}
           className="w-full rounded-lg bg-surface2 border border-white/10 px-3 py-2.5 text-sm focus:outline-none focus:border-gold" />
+      </div>
+
+      <div>
+        <label className="block text-sm text-mist mb-1">
+          SEO Keywords <span className="text-mist/60">(comma separated)</span>
+        </label>
+        <textarea
+          value={form.keywords}
+          onChange={(e) => update('keywords', e.target.value)}
+          rows={2}
+          placeholder="e.g. شقق للبيع في التجمع الخامس, apartments New Cairo, villa Sokhna, best launch East Cairo 2026"
+          className="w-full rounded-lg bg-surface2 border border-white/10 px-3 py-2.5 text-sm focus:outline-none focus:border-gold"
+        />
+        <p className="text-mist/60 text-xs mt-1">
+          Add every phrase someone might search for — Arabic and English, area names, unit types.
+          These show up on the project page and help it get found in search engines.
+        </p>
       </div>
 
       {error && <p className="text-red-400 text-sm">{error}</p>}

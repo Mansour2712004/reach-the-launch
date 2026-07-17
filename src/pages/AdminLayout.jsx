@@ -29,6 +29,7 @@ export default function AdminLayout() {
         {permissions.developers && <NavLink to="/admin/developers" className={tabClass}>Developers</NavLink>}
         {permissions.offers && <NavLink to="/admin/special-offer" className={tabClass}>Special Offer</NavLink>}
         {permissions.submissions && <NavLink to="/admin/submissions" className={tabClass}>Contact Submissions</NavLink>}
+        {isSuperAdmin && <NavLink to="/admin/whatsapp" className={tabClass}>WhatsApp Number</NavLink>}
         {isSuperAdmin && <NavLink to="/admin/users" className={tabClass}>Manage Admins</NavLink>}
       </div>
 

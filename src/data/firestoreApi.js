@@ -137,3 +137,16 @@ export async function setSpecialOffer(data) {
 export async function deleteSpecialOffer() {
   return deleteDoc(SPECIAL_OFFER_REF())
 }
+
+/* ---------------- WhatsApp contact number (superadmin only) ---------------- */
+
+const WHATSAPP_REF = () => doc(db, 'settings', 'whatsapp')
+
+export async function getWhatsappNumber() {
+  const snap = await getDoc(WHATSAPP_REF())
+  return snap.exists() ? snap.data().phone : null
+}
+
+export async function setWhatsappNumber(phone) {
+  return setDoc(WHATSAPP_REF(), { phone, updatedAt: serverTimestamp() })
+}
